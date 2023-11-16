@@ -7,12 +7,12 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
   const groupJoi = joi.object({
     name: joi.string().required(),
     description: joi.string().required(),
-    banner: joi.string().required(),
+    banner: joi.string().default('').allow(''),
     thumbnail: joi.string().required(),
     feedTotal: joi.number().default(0),
     memberTotal: joi.number().default(0),
     createdBy: joi.string().required(),
-    rules: joi.string().allow(''),
+    rules: joi.string().allow('').default(''),
     status: joi.number().valid(...Object.values(groupStatus)).default(groupStatus.PUBLIC)
   })
   const groupSchema = joi2MongoSchema(groupJoi, {

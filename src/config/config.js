@@ -1,5 +1,5 @@
 const serverSettings = {
-  port: process.env.PORT || 8004,
+  port: process.env.PORT || 8007,
   basePath: process.env.BASE_PATH || ''
 }
 
@@ -14,7 +14,7 @@ const httpCode = {
 }
 
 const dbSettings = {
-  db: process.env.DB || 'hddt-customer',
+  db: process.env.DB || 'sn-group-service',
   user: process.env.DB_USER || '',
   pass: process.env.DB_PASS || '',
   repl: process.env.DB_REPLS || '',
