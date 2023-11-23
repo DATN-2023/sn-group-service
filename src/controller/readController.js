@@ -8,7 +8,7 @@ module.exports = (container) => {
     }
   } = container.resolve('models')
   const { httpCode, serverHelper } = container.resolve('config')
-  const { groupRepo, modRepo } = container.resolve('repo')
+  const { groupRepo, modRepo, userGroupRepo } = container.resolve('repo')
   const getGroupById = async (req, res) => {
     try {
       const { id } = req.params

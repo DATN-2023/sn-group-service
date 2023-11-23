@@ -5,7 +5,7 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
     user: joi.string().required()
   })
   const modSchema = joi2MongoSchema(modJoi, {
-    createdBy: {
+    user: {
       type: ObjectId
     }
   }, {

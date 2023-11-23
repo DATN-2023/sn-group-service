@@ -10,7 +10,7 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
     status: joi.number().valid(...Object.values(joinStatusConfig)).default(joinStatusConfig.MEMBER)
   })
   const userGroupSchema = joi2MongoSchema(userGroupJoi, {
-    createdBy: {
+    user: {
       type: ObjectId
     }
   }, {

@@ -8,7 +8,7 @@ module.exports = (container) => {
     }
   } = container.resolve('models')
   const { httpCode, serverHelper } = container.resolve('config')
-  const { groupRepo } = container.resolve('repo')
+  const { groupRepo, userGroupRepo, modRepo } = container.resolve('repo')
   const addGroup = async (req, res) => {
     try {
       const thoauoc = req.body
