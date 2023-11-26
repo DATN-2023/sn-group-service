@@ -211,12 +211,25 @@ module.exports = (container) => {
       res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
     }
   }
+  const getJoiningGroups = async (req, res) => {
+    try {
+      const { user } = req.params
+      const userGroups = await userGroupRepo.getUserGroup({ user: new ObjectId(user) }, 10, 0, { createdAt: -1 })
+      const ids = userGroups.map(userGroup => userGroup.group)
+      const groups = await groupRepo.getGroupNoPaging({ _id: { $in: ids } })
+      res.status(httpCode.SUCCESS).send(groups)
+    } catch (e) {
+      logger.e(e)
+      res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
+    }
+  }
   return {
     getGroup,
     getGroupById,
     getModById,
     getMod,
     getUserGroupById,
-    getUserGroup
+    getUserGroup,
+    getJoiningGroups
   }
 }

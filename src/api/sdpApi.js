@@ -3,6 +3,7 @@ module.exports = (app, container) => {
   const { readController } = container.resolve('controller')
   const { basePath } = serverSettings
   app.get(`${basePath}/sdp/groups`, readController.getGroup)
+  app.get(`${basePath}/sdp/groups/joining`, readController.getJoiningGroups)
   app.get(`${basePath}/sdp/groups/:id`, readController.getGroupById)
 
   app.get(`${basePath}/sdp/mods`, readController.getMod)

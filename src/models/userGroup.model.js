@@ -12,6 +12,9 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
   const userGroupSchema = joi2MongoSchema(userGroupJoi, {
     user: {
       type: ObjectId
+    },
+    group: {
+      type: ObjectId
     }
   }, {
     createdAt: {

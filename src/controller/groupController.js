@@ -7,8 +7,14 @@ module.exports = (container) => {
       Group
     }
   } = container.resolve('models')
-  const { httpCode, serverHelper } = container.resolve('config')
-  const { groupRepo } = container.resolve('repo')
+  const {
+    httpCode,
+    serverHelper
+  } = container.resolve('config')
+  const {
+    groupRepo,
+    userGroupRepo
+  } = container.resolve('repo')
   const addGroup = async (req, res) => {
     try {
       const thoauoc = req.body
@@ -49,6 +55,18 @@ module.exports = (container) => {
       } else {
         res.status(httpCode.BAD_REQUEST).end()
       }
+    } catch (e) {
+      logger.e(e)
+      res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
+    }
+  }
+  const getJoiningGroups = async (req, res) => {
+    try {
+      const { user } = req.params
+      const userGroups = await userGroupRepo.getUserGroup({ user: new ObjectId(user) }, 10, 0, { createdAt: -1 })
+      const ids = userGroups.map(userGroup => userGroup.group)
+      const groups = await groupRepo.getGroupNoPaging({ _id: { $in: ids } })
+      res.status(httpCode.SUCCESS).send(groups)
     } catch (e) {
       logger.e(e)
       res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
@@ -134,6 +152,7 @@ module.exports = (container) => {
     getGroup,
     getGroupById,
     updateGroup,
-    deleteGroup
+    deleteGroup,
+    getJoiningGroups
   }
 }
