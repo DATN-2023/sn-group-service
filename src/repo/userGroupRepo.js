@@ -35,6 +35,13 @@ module.exports = container => {
   const removeUserGroup = (pipe) => {
     return UserGroup.deleteMany(pipe)
   }
+  const findOne = (pipe) => {
+    return UserGroup.findOne(pipe)
+  }
+
+  const findOneAndRemove = (pipe) => {
+    return UserGroup.where().findOneAndRemove(pipe)
+  }
   return {
     getUserGroupNoPaging,
     removeUserGroup,
@@ -45,6 +52,8 @@ module.exports = container => {
     updateUserGroup,
     checkIdExist,
     getCount,
-    getUserGroup
+    getUserGroup,
+    findOne,
+    findOneAndRemove
   }
 }

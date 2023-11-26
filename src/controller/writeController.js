@@ -4,14 +4,23 @@ module.exports = (container) => {
   const {
     schemaValidator,
     schemas: {
-      Group
+      UserGroup
     }
   } = container.resolve('models')
-  const { httpCode, serverHelper } = container.resolve('config')
-  const { groupRepo, userGroupRepo, modRepo } = container.resolve('repo')
+  const { joinStatusConfig } = UserGroup.getConfig()
+  const {
+    httpCode,
+    serverHelper
+  } = container.resolve('config')
+  const {
+    groupRepo,
+    userGroupRepo,
+    modRepo
+  } = container.resolve('repo')
   const addGroup = async (req, res) => {
     try {
       const thoauoc = req.body
+      thoauoc.memberTotal = 1
       const {
         error,
         value
@@ -20,6 +29,15 @@ module.exports = (container) => {
         return res.status(httpCode.BAD_REQUEST).send({ msg: error.message })
       }
       const sp = await groupRepo.addGroup(value)
+      await userGroupRepo.addUserGroup({
+        group: sp._id.toString(),
+        user: sp.createdBy.toString(),
+        status: joinStatusConfig.MEMBER
+      })
+      await modRepo.addMod({
+        group: sp._id.toString(),
+        user: sp.createdBy.toString()
+      })
       res.status(httpCode.CREATED).send(sp)
     } catch (e) {
       logger.e(e)
@@ -31,6 +49,8 @@ module.exports = (container) => {
       const { id } = req.params
       if (id) {
         await groupRepo.deleteGroup(id)
+        await userGroupRepo.removeUserGroup({ group: id })
+        await modRepo.removeMod({ group: id })
         res.status(httpCode.SUCCESS).send({ ok: true })
       } else {
         res.status(httpCode.BAD_REQUEST).end()
@@ -117,17 +137,20 @@ module.exports = (container) => {
   }
   const addUserGroup = async (req, res) => {
     try {
-      const thoauoc = req.body
+      const userGroup = req.body
+      userGroup.status = joinStatusConfig.PENDING
       const {
         error,
         value
-      } = await schemaValidator(thoauoc, 'UserGroup')
+      } = await schemaValidator(userGroup, 'UserGroup')
       if (error) {
         return res.status(httpCode.BAD_REQUEST).send({ msg: error.message })
       }
       const sp = await userGroupRepo.addUserGroup(value)
+      await groupRepo.updateGroup(sp.group.toString(), { $inc: { pendingMemberTotal: 1 } })
       res.status(httpCode.CREATED).send(sp)
-    } catch (e) {
+    } catch
+      (e) {
       logger.e(e)
       res.status(httpCode.UNKNOWN_ERROR).end()
     }
@@ -136,7 +159,24 @@ module.exports = (container) => {
     try {
       const { id } = req.params
       if (id) {
-        await userGroupRepo.deleteUserGroup(id)
+        const sp = await userGroupRepo.findOneAndRemove({ _id: new ObjectId(id) })
+        const deleteBody = sp.status === joinStatusConfig.MEMBER ? { memberTotal: -1 } : { pendingMemberTotal: -1 }
+        await groupRepo.updateGroup(sp.group.toString(), { $inc: deleteBody })
+        res.status(httpCode.SUCCESS).send({ ok: true })
+      } else {
+        res.status(httpCode.BAD_REQUEST).end()
+      }
+    } catch (e) {
+      logger.e(e)
+      res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
+    }
+  }
+  const deleteUserGroupByUserAndGroup = async (req, res) => {
+    try {
+      const body = req.body
+      if (body) {
+        const sp = await userGroupRepo.findOneAndRemove(body)
+        await groupRepo.updateGroup(sp.group.toString(), { $inc: { memberTotal: -1 } })
         res.status(httpCode.SUCCESS).send({ ok: true })
       } else {
         res.status(httpCode.BAD_REQUEST).end()
@@ -150,15 +190,16 @@ module.exports = (container) => {
     try {
       const { id } = req.params
       const userGroup = req.body
-      const {
-        error,
-        value
-      } = await schemaValidator(userGroup, 'UserGroup')
-      if (error) {
-        return res.status(httpCode.BAD_REQUEST).send({ msg: error.message })
-      }
-      if (id && userGroup) {
-        const sp = await userGroupRepo.updateUserGroup(id, value)
+      // const {
+      //   error,
+      //   value
+      // } = await schemaValidator(userGroup, 'UserGroup')
+      // if (error) {
+      //   return res.status(httpCode.BAD_REQUEST).send({ msg: error.message })
+      // }
+      if (id && userGroup && userGroup.status) {
+        const sp = await userGroupRepo.updateUserGroup(id, userGroup)
+        await groupRepo.updateGroup(sp.group.toString(), { $inc: { pendingMemberTotal: -1, memberTotal: 1 } })
         res.status(httpCode.SUCCESS).send(sp)
       } else {
         res.status(httpCode.BAD_REQUEST).end()
@@ -177,6 +218,7 @@ module.exports = (container) => {
     deleteMod,
     addUserGroup,
     updateUserGroup,
-    deleteUserGroup
+    deleteUserGroup,
+    deleteUserGroupByUserAndGroup
   }
 }

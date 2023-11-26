@@ -6,7 +6,7 @@ module.exports = container => {
     return c.save()
   }
   const getGroupById = (id) => {
-    return Group.findById(id)
+    return Group.findById(id).lean()
   }
   const deleteGroup = (id) => {
     return Group.findByIdAndRemove(id, { useFindAndModify: false })

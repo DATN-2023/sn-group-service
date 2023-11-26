@@ -1,4 +1,7 @@
-module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
+module.exports = (joi, mongoose, {
+  joi2MongoSchema,
+  schemas
+}) => {
   const { ObjectId } = mongoose.Types
   const joinStatusConfig = {
     MEMBER: 1,
@@ -30,6 +33,9 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
     stripUnknown: true
   }) => {
     return userGroupJoi.validate(obj, config)
+  }
+  userGroupSchema.statics.getConfig = () => {
+    return { joinStatusConfig }
   }
   const userGroupModel = mongoose.model('UserGroup', userGroupSchema)
   userGroupModel.syncIndexes()

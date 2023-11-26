@@ -35,6 +35,9 @@ module.exports = container => {
   const removeMod = (pipe) => {
     return Mod.deleteMany(pipe)
   }
+  const findOne = (pipe) => {
+    return Mod.findOne(pipe)
+  }
   return {
     getModNoPaging,
     removeMod,
@@ -45,6 +48,7 @@ module.exports = container => {
     updateMod,
     checkIdExist,
     getCount,
-    getMod
+    getMod,
+    findOne
   }
 }

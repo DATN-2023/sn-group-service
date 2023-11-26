@@ -4,16 +4,40 @@ module.exports = (container) => {
   const {
     schemaValidator,
     schemas: {
-      Group, Mod
+      Group,
+      Mod,
+      UserGroup
     }
   } = container.resolve('models')
-  const { httpCode, serverHelper } = container.resolve('config')
-  const { groupRepo, modRepo, userGroupRepo } = container.resolve('repo')
+  const {
+    httpCode,
+    serverHelper
+  } = container.resolve('config')
+  const {
+    groupRepo,
+    modRepo,
+    userGroupRepo
+  } = container.resolve('repo')
   const getGroupById = async (req, res) => {
     try {
       const { id } = req.params
       if (id) {
-        const group = await groupRepo.getGroupById(id)
+        const groupId = id.split('-')[0]
+        const user = id.split('-')[1]
+        const group = await groupRepo.getGroupById(groupId)
+        if (!group) res.status(httpCode.BAD_REQUEST).json({'msg': 'BAD_REQUEST'})
+        const mod = await modRepo.findOne({
+          group: groupId,
+          user
+        })
+        if (mod) {
+          group.isMod = true
+        }
+        const userGroup = await userGroupRepo.findOne({
+          group: groupId,
+          user
+        })
+        if (userGroup) group.userStatus = userGroup.status
         res.status(httpCode.SUCCESS).send(group)
       } else {
         res.status(httpCode.BAD_REQUEST).end()
@@ -187,7 +211,7 @@ module.exports = (container) => {
         const vl = search[i]
         const pathType = (UserGroup.schema.path(i) || {}).instance || ''
         if (pathType.toLowerCase() === 'objectid') {
-          pipe[i] = ObjectId(vl)
+          pipe[i] = new ObjectId(vl)
         } else if (pathType === 'Number') {
           pipe[i] = +vl
         } else if (pathType === 'String' && vl.constructor === String) {

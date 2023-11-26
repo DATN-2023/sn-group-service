@@ -11,6 +11,7 @@ module.exports = (joi, mongoose, { joi2MongoSchema, schemas }) => {
     thumbnail: joi.string().default('').allow(''),
     feedTotal: joi.number().default(0),
     memberTotal: joi.number().default(0),
+    pendingMemberTotal: joi.number().default(0),
     createdBy: joi.string().required(),
     rules: joi.string().allow('').default(''),
     status: joi.number().valid(...Object.values(groupStatus)).default(groupStatus.PUBLIC)

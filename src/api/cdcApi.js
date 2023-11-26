@@ -11,6 +11,7 @@ module.exports = (app, container) => {
   app.post(`${basePath}/cdc/mods`, writeController.addMod)
 
   app.put(`${basePath}/cdc/userGroups/:id`, writeController.updateUserGroup)
+  app.delete(`${basePath}/cdc/userGroups`, writeController.deleteUserGroupByUserAndGroup)
   app.delete(`${basePath}/cdc/userGroups/:id`, writeController.deleteUserGroup)
   app.post(`${basePath}/cdc/userGroups`, writeController.addUserGroup)
 }
