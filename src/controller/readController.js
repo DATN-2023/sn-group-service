@@ -237,7 +237,7 @@ module.exports = (container) => {
   }
   const getJoiningGroups = async (req, res) => {
     try {
-      const { user } = req.params
+      const { user } = req.query
       const userGroups = await userGroupRepo.getUserGroup({ user: new ObjectId(user) }, 10, 0, { createdAt: -1 })
       const ids = userGroups.map(userGroup => userGroup.group)
       const groups = await groupRepo.getGroupNoPaging({ _id: { $in: ids } })
