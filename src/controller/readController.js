@@ -252,6 +252,38 @@ module.exports = (container) => {
       res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
     }
   }
+  const getRandomGroups = async (req, res) => {
+    try {
+      const { userGroup } = req.query
+      const query = [
+        { $sample: { size: 10 } },
+        {
+          $lookup:
+            {
+              from: 'usergroups',
+              localField: '_id',
+              foreignField: 'group',
+              as: 'userGroup'
+            }
+        },
+        {
+          $unwind:
+            {
+              path: '$userGroup',
+              preserveNullAndEmptyArrays: true
+            }
+        }
+      ]
+      const data = await groupRepo.getGroupAgg(query)
+      for (const group of data) {
+        group.userStatus = userGroup === group?.userGroup?.user.toString() ? group?.userGroup?.status : 0
+      }
+      res.status(httpCode.SUCCESS).send({ data })
+    } catch (e) {
+      logger.e(e)
+      res.status(httpCode.UNKNOWN_ERROR).send({ ok: false })
+    }
+  }
   return {
     getGroup,
     getGroupById,
@@ -259,6 +291,7 @@ module.exports = (container) => {
     getMod,
     getUserGroupById,
     getUserGroup,
-    getJoiningGroups
+    getJoiningGroups,
+    getRandomGroups
   }
 }
