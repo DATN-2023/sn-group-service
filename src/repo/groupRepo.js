@@ -30,7 +30,7 @@ module.exports = container => {
     return Group.find(pipe).limit(limit).skip(skip).sort(sort)
   }
   const getGroupNoPaging = (pipe) => {
-    return Group.find(pipe)
+    return Group.find(pipe).lean()
   }
   const removeGroup = (pipe) => {
     return Group.deleteMany(pipe)

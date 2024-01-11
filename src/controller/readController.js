@@ -18,6 +18,7 @@ module.exports = (container) => {
     modRepo,
     userGroupRepo
   } = container.resolve('repo')
+  const { joinStatusConfig } = UserGroup.getConfig()
   const getGroupById = async (req, res) => {
     try {
       const { id } = req.params
@@ -25,7 +26,7 @@ module.exports = (container) => {
         const groupId = id.split('-')[0]
         const user = id.split('-')[1]
         const group = await groupRepo.getGroupById(groupId)
-        if (!group) res.status(httpCode.BAD_REQUEST).json({'msg': 'BAD_REQUEST'})
+        if (!group) res.status(httpCode.BAD_REQUEST).json({ 'msg': 'BAD_REQUEST' })
         const mod = await modRepo.findOne({
           group: groupId,
           user
@@ -238,9 +239,13 @@ module.exports = (container) => {
   const getJoiningGroups = async (req, res) => {
     try {
       const { user } = req.query
-      const userGroups = await userGroupRepo.getUserGroup({ user: new ObjectId(user) }, 10, 0, { createdAt: -1 })
+      const userGroups = await userGroupRepo.getUserGroup({
+        user: new ObjectId(user),
+        status: joinStatusConfig.MEMBER
+      }, 10, 0, { createdAt: -1 })
       const ids = userGroups.map(userGroup => userGroup.group)
-      const groups = await groupRepo.getGroupNoPaging({ _id: { $in: ids } })
+      const data = await groupRepo.getGroupNoPaging({ _id: { $in: ids } })
+      const groups = data.map(group => ({ ...group, userStatus: joinStatusConfig.MEMBER }))
       res.status(httpCode.SUCCESS).send(groups)
     } catch (e) {
       logger.e(e)
