@@ -261,8 +261,17 @@ module.exports = (container) => {
           $lookup:
             {
               from: 'usergroups',
-              localField: '_id',
-              foreignField: 'group',
+              let: {groupId: "$_id"},
+              pipeline: [
+                {
+                  $match: {
+                    user: new ObjectId(userGroup),
+                    $expr: {
+                      "$eq": ["$group", "$$groupId"]
+                    }
+                  }
+                }
+              ],
               as: 'userGroup'
             }
         },
