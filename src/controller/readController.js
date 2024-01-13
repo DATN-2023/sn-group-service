@@ -61,18 +61,18 @@ module.exports = (container) => {
       sort = +sort === 0 ? { _id: 1 } : +sort || { _id: -1 }
       const skip = (page - 1) * perPage
       const search = { ...req.query }
+      const pipe = {}
       if (ids) {
         if (ids.constructor === Array) {
-          search.id = { $in: ids }
+          pipe._id = { $in: ids.map(id => new ObjectId(id)) }
         } else if (ids.constructor === String) {
-          search.id = { $in: ids.split(',') }
+          pipe._id = { $in: ids.split(',').map(id => new ObjectId(id)) }
         }
       }
       delete search.ids
       delete search.page
       delete search.perPage
       delete search.sort
-      const pipe = {}
       Object.keys(search).forEach(i => {
         const vl = search[i]
         const pathType = (Group.schema.path(i) || {}).instance || ''
